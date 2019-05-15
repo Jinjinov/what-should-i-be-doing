@@ -153,31 +153,35 @@
       */
       function listTaskLists() {
         gapi.client.tasks.tasklists.list({
-            'maxResults': 10
+            maxResults: 10
         }).then(function(response) {
-          //appendPre('Task Lists:');
           var taskLists = response.result.items;
           if (taskLists && taskLists.length > 0) {
-            /*
             for (var i = 0; i < taskLists.length; i++) {
               var taskList = taskLists[i];
-              appendPre(taskList.title + ' (' + taskList.id + ')');
+              appendPre(taskList.title);
+              appendPre(' ');
+              gapi.client.tasks.tasks.list({
+                  tasklist: taskLists[i].id,
+                  maxResults: 100,
+                  showCompleted: true,
+                  showDeleted: true,
+                  showHidden: true
+              }).then(function(response) {
+                  var tasks = response.result.items;
+                  for(var j = 0; j < tasks.length; j++) {
+                    var task = tasks[j];
+                    if(task.deleted) {
+                      appendPre('Deleted:');
+                      task.deleted = false;
+                      gapi.client.tasks.tasks.update({ task: task.id, tasklist: taskList.id }, task).then(function (response) {});
+                    }
+                    appendPre('Task: ' + task.title + ' ----- Due: ' + formatDate(new Date(task.due)));
+                    appendPre('Status: ' + task.status + ' - Updated: ' + formatDate(new Date(task.updated)));
+                    appendPre(' ');
+                  }
+              });
             }
-            /**/
-            gapi.client.tasks.tasks.list({
-                tasklist: taskLists[0].id
-            }).then(function(response) {
-                //console.log(response);
-                var tasks = response.result.items;
-                //console.log(tasks);
-                for(var j = 0; j < tasks.length; j++) {
-                  var task = tasks[j];
-                  //console.log(task.title);
-                  appendPre('Task: ' + task.title + ' ----- Due: ' + formatDate(new Date(task.due)));
-                  appendPre('Status: ' + task.status + ' - Updated: ' + formatDate(new Date(task.updated)));
-                  appendPre(' ');
-                }
-            })
           } else {
             appendPre('No task lists found.');
           }
