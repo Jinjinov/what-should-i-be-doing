@@ -173,8 +173,8 @@
                     var task = tasks[j];
                     if(task.deleted) {
                       appendPre('Deleted:');
-                      task.deleted = false;
-                      gapi.client.tasks.tasks.update({ task: task.id, tasklist: taskList.id }, task).then(function (response) {});
+                      //task.deleted = false;
+                      //gapi.client.tasks.tasks.update({ task: task.id, tasklist: taskList.id }, task).then(function(response) {});
                     }
                     appendPre('Task: ' + task.title + ' ----- Due: ' + formatDate(new Date(task.due)));
                     appendPre('Status: ' + task.status + ' - Updated: ' + formatDate(new Date(task.updated)));
