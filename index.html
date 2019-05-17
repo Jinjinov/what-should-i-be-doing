@@ -156,8 +156,8 @@
       function listUpcomingEvents() {
         gapi.client.calendar.events.list({
           'calendarId': 'primary',
-          'timeMin': (new Date(Date.now() - 864e5)).toISOString(),
-          'showDeleted': true,
+          'timeMin': (new Date()).toISOString(),
+          'showDeleted': false,
           'singleEvents': true,
           'maxResults': 30,
           'orderBy': 'startTime'
