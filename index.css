@@ -1,6 +1,8 @@
 body {
-    /* font-family:'Roboto', 'Helvetica Neue', 'Helvetica', 'Arial', sans-serif; */
-    font-family: 'Courier New', Courier, monospace;
+    background-color: #F8FFF8;
+    color: #004000;
+    font-family:'Roboto Mono', 'Arial', sans-serif;
+    /* font-family: 'Courier New', Courier, monospace; */
     font-size: 16pt;
 }
 
