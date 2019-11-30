@@ -79,6 +79,12 @@
       // TODO:: make an HTTP request
       //$response = $httpClient->get('https://www.googleapis.com/plus/v1/people/me');
 
+      $reminders = list_reminders($httpClient, 10);
+
+      foreach($reminders as $reminder) {
+        echo $reminder;
+      }
+
       // http://docs.guzzlephp.org/en/stable/request-options.html
 
       $drive = new Google_Service_Drive($client);

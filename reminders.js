@@ -110,99 +110,127 @@ var URIs = {
     'list': 'https://reminders-pa.clients6.google.com/v1internalOP/reminders/list'
 };
 
-var HEADERS = {
-    'content-type': 'application/json+protobuf',
-};
-
 var HTTP_OK = 200;
     
-function create_reminder(httpRequest, access_token, reminder) {
+function create_reminder(oauth2SignIn, access_token, reminder) {
     /*
     send a 'create reminder' request.
     returns True upon a successful creation of a reminder
     */
-    var [response, content] = httpRequest.open(
-        'POST',
-        URIs['create'] + access_token,
-        create_reminder_request_body(reminder),
-        HEADERS
-    );
-    if (response.status == HTTP_OK) {
-        return true;
+
+    // https://stackoverflow.com/questions/9713058/send-post-data-using-xmlhttprequest
+
+    var xhr = new XMLHttpRequest();
+
+    xhr.open('POST', URIs['create'] + access_token);
+
+    xhr.setRequestHeader('Content-type', 'application/json');
+        
+    xhr.onreadystatechange = function (e) {
+        if (xhr.status == HTTP_OK) {
+            return true;
+        }
+        else {
+            oauth2SignIn();
+            return false;
+        }
     }
-    else {
-        return false;
-    }
+
+    xhr.send(create_reminder_request_body(reminder));
 }
 
-function get_reminder(httpRequest, access_token, reminder_id) {
+function get_reminder(oauth2SignIn, access_token, reminder_id) {
     /*
     retrieve information about the reminder with the given id. 
     None if an error occurred
     */
-    var [response, content] = httpRequest.open(
-        'POST',
-        URIs['get'] + access_token,
-        get_reminder_request_body(reminder_id),
-        HEADERS
-    );
-    if (response.status == HTTP_OK) {
-        var content_dict = JSON.parse(content.decode('utf-8'));
-        if (content_dict == {}) {
-            print(`Couldn't find reminder with id=${reminder_id}`);
+
+    // https://stackoverflow.com/questions/9713058/send-post-data-using-xmlhttprequest
+
+    var xhr = new XMLHttpRequest();
+
+    xhr.open('POST', URIs['get'] + access_token);
+
+    xhr.setRequestHeader('Content-type', 'application/json');
+
+    xhr.onreadystatechange = function (e) {
+        if (xhr.status == HTTP_OK) {
+            var content_dict = JSON.parse(xhr.response.decode('utf-8'));
+            if (content_dict == {}) {
+                print(`Couldn't find reminder with id=${reminder_id}`);
+                return null;
+            }
+            var reminder_dict = content_dict['1'][0];
+            return build_reminder(reminder_dict);
+        }
+        else {
+            oauth2SignIn();
             return null;
         }
-        var reminder_dict = content_dict['1'][0];
-        return build_reminder(reminder_dict);
     }
-    else {
-        return null;
-    }
+
+    xhr.send(get_reminder_request_body(reminder_id));
 }
 
-function delete_reminder(httpRequest, access_token, reminder_id) {
+function delete_reminder(oauth2SignIn, access_token, reminder_id) {
     /*
     delete the reminder with the given id.
     Returns True upon a successful deletion
     */
-    var [response, content] = httpRequest.open(
-        'POST',
-        URIs['delete'] + access_token,
-        delete_reminder_request_body(reminder_id),
-        HEADERS
-    );
-    if (response.status == HTTP_OK) {
-        return true;
+
+    // https://stackoverflow.com/questions/9713058/send-post-data-using-xmlhttprequest
+
+    var xhr = new XMLHttpRequest();
+
+    xhr.open('POST', URIs['delete'] + access_token);
+
+    xhr.setRequestHeader('Content-type', 'application/json');
+
+    xhr.onreadystatechange = function (e) {
+        if (xhr.status == HTTP_OK) {
+            return true;
+        }
+        else {
+            oauth2SignIn();
+            return false;
+        }
     }
-    else {
-        return false;
-    }
+
+    xhr.send(delete_reminder_request_body(reminder_id));
 }
 
-function list_reminders(httpRequest, access_token, num_reminders) {
+function list_reminders(oauth2SignIn, access_token, num_reminders) {
     /*
     returns a list of the last num_reminders created reminders, or
     None if an error occurred
     */
-    var [response, content] = httpRequest.open(
-        'POST',
-        URIs['list'] + access_token,
-        list_reminder_request_body(num_reminders),
-        HEADERS
-    );
-    if (response.status == HTTP_OK) {
-        var content_dict = JSON.parse(content.decode('utf-8'));
-        if (!('1' in content_dict)) {
-            return [];
+
+    // https://stackoverflow.com/questions/9713058/send-post-data-using-xmlhttprequest
+
+    var xhr = new XMLHttpRequest();
+
+    xhr.open('POST', URIs['list'] + access_token);
+
+    xhr.setRequestHeader('Content-type', 'application/json');
+
+    xhr.onreadystatechange = function (e) {
+        if (xhr.status == HTTP_OK) {
+            var content_dict = JSON.parse(xhr.response.decode('utf-8'));
+            if (!('1' in content_dict)) {
+                return [];
+            }
+            var reminders_dict_list = content_dict['1'];
+            var reminders = [];
+            for(var reminder_dict of reminders_dict_list) {
+                reminders.push(build_reminder(reminder_dict));
+            }
+            return reminders;
         }
-        var reminders_dict_list = content_dict['1'];
-        var reminders = [];
-        for(var reminder_dict of reminders_dict_list) {
-            reminders.push(build_reminder(reminder_dict));
+        else {
+            oauth2SignIn();
+            return null;
         }
-        return reminders;
     }
-    else {
-        return null;
-    }
+
+    xhr.send(list_reminder_request_body(num_reminders));
 }

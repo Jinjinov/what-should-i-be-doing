@@ -127,13 +127,17 @@ function create_reminder($httpClient, $reminder) {
     send a 'create reminder' request.
     returns True upon a successful creation of a reminder
     */
-    [$response, $content] = $httpClient->request(
+    $response = $httpClient->request(
         'POST',
         $URIs['create'],
-        create_reminder_request_body($reminder),
-        $HEADERS
+        [
+            'headers' => $HEADERS,
+            'body' => create_reminder_request_body($reminder),
+        ]
     );
-    if ($response.status == HTTP_OK) {
+
+    if ($response.getStatusCode() == HTTP_OK) {
+        $content = $response->getBody();
         return true;
     }
     else {
@@ -146,19 +150,27 @@ function get_reminder($httpClient, $reminder_id) {
     retrieve information about the reminder with the given id. 
     None if an error occurred
     */
-    [$response, $content] = $httpClient->request(
+    $response = $httpClient->request(
         'POST',
         $URIs['get'],
-        get_reminder_request_body($reminder_id),
-        $HEADERS
+        [
+            'headers' => $HEADERS,
+            'body' => get_reminder_request_body($reminder_id)
+        ]
     );
-    if ($response.status == HTTP_OK) {
+
+    if ($response.getStatusCode() == HTTP_OK) {
+
+        $content = $response->getBody();
         $content_dict = json_decode($content.decode('utf-8'));
+
         if (!isset($content_dict) || empty($content_dict)) {
             print("Couldn\'t find reminder with id=${reminder_id}");
             return null;
         }
+
         $reminder_dict = $content_dict['1'][0];
+
         return build_reminder($reminder_dict);
     }
     else {
@@ -171,13 +183,17 @@ function delete_reminder($httpClient, $reminder_id) {
     delete the reminder with the given id.
     Returns True upon a successful deletion
     */
-    [$response, $content] = $httpClient->request(
+    $response = $httpClient->request(
         'POST',
         $URIs['delete'],
-        delete_reminder_request_body($reminder_id),
-        $HEADERS
+        [
+            'headers' => $HEADERS,
+            'body' => delete_reminder_request_body($reminder_id)
+        ]
     );
-    if ($response.status == HTTP_OK) {
+
+    if ($response.getStatusCode() == HTTP_OK) {
+        $content = $response->getBody();
         return true;
     }
     else {
@@ -190,26 +206,34 @@ function list_reminders($httpClient, $num_reminders) {
     returns a list of the last num_reminders created reminders, or
     None if an error occurred
     */
-    [$response, $content] = $httpClient->request(
+    $response = $httpClient->request(
         'POST',
         $URIs['list'],
-        list_reminder_request_body($num_reminders),
-        $HEADERS
+        [
+            'headers' => $HEADERS,
+            'body' => list_reminder_request_body($num_reminders)
+        ]
     );
-    if ($response.status == HTTP_OK) {
+
+    if ($response.getStatusCode() == HTTP_OK) {
+
+        $content = $response->getBody();
         $content_dict = json_decode($content.decode('utf-8'));
+
         if (!array_key_exists('1', $content_dict)) {
             return [];
         }
+
         $reminders_dict_list = $content_dict['1'];
         $reminders = [];
+
         foreach($reminders_dict_list as $reminder_dict) {
             array_push($reminders, build_reminder($reminder_dict));
         }
+
         return $reminders;
     }
     else {
         return null;
     }
 }
-
