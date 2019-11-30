@@ -17,34 +17,6 @@ class Reminder {
 
 // https://developers.google.com/identity/protocols/OAuth2WebServer
 
-$USER_OAUTH_DATA_FILE = os.path.expanduser('~/.google-reminders-cli-oauth');
-
-function authenticate() {
-    /*
-    returns an Http instance that already contains the user credentials and is
-    ready to make requests to alter user data.
-    */
-    
-    $app_keys = [
-        "APP_CLIENT_ID" => "380438262846-qktru2bcctgi6cjiqrqdfajcuarqgnqm.apps.googleusercontent.com",
-        "APP_CLIENT_SECRET" => "mDFm3Wx-PCWpa0HdOG9r-GnW"
-    ];
-
-    $storage = Storage($USER_OAUTH_DATA_FILE);
-    $credentials = $storage.get();
-    if ($credentials == null || $credentials.invalid) {
-        $credentials = tools.run_flow(
-            OAuth2WebServerFlow(
-                $app_keys['APP_CLIENT_ID'],
-                $app_keys['APP_CLIENT_SECRET'],
-                ['https://www.googleapis.com/auth/reminders'],
-                'google reminders cli tool'),
-            $storage);
-    }
-    $auth_http = $credentials.authorize(httplib2.Http());
-    return $auth_http;
-}
-
 function create_reminder_request_body($reminder) {
     $body = (object)[
         '2' => (object)[
@@ -149,109 +121,95 @@ $HEADERS = [
 ];
 
 $HTTP_OK = 200;
-
-class RemindersClient {
-    function __construct() {
-        $this->auth_http = authenticate();
-    }
     
-    function _report_error($response, $content, $func_name) {
-        print("Error in ${func_name}:");
-        print("    status code: $response->status");
-        print("    content: ${content}");
+function create_reminder($httpClient, $reminder) {
+    /*
+    send a 'create reminder' request.
+    returns True upon a successful creation of a reminder
+    */
+    [$response, $content] = $httpClient->request(
+        'POST',
+        $URIs['create'],
+        create_reminder_request_body($reminder),
+        $HEADERS
+    );
+    if ($response.status == HTTP_OK) {
+        return true;
     }
-    
-    function create_reminder($reminder) {
-        /*
-        send a 'create reminder' request.
-        returns True upon a successful creation of a reminder
-        */
-        [$response, $content] = $this->auth_http.request(
-            $URIs['create'],
-            'POST',
-            create_reminder_request_body($reminder),
-            $HEADERS
-        );
-        if ($response.status == HTTP_OK) {
-            return true;
-        }
-        else {
-            $this->_report_error($response, $content, 'create_reminder');
-            return false;
-        }
-    }
-
-    function get_reminder($reminder_id) {
-        /*
-        retrieve information about the reminder with the given id. 
-        None if an error occurred
-        */
-        [$response, $content] = $this->auth_http.request(
-            $URIs['get'],
-            'POST',
-            get_reminder_request_body($reminder_id),
-            $HEADERS
-        );
-        if ($response.status == HTTP_OK) {
-            $content_dict = json_decode(content.decode('utf-8'));
-            if (!isset($content_dict) || empty($content_dict)) {
-                print("Couldn\'t find reminder with id=${reminder_id}");
-                return null;
-            }
-            $reminder_dict = $content_dict['1'][0];
-            return build_reminder($reminder_dict);
-        }
-        else {
-            $this->_report_error($response, $content, 'get_reminder');
-        }
-    }
-    
-    function delete_reminder($reminder_id) {
-        /*
-        delete the reminder with the given id.
-        Returns True upon a successful deletion
-        */
-        [$response, $content] = $this->auth_http.request(
-            $URIs['delete'],
-            'POST',
-            delete_reminder_request_body($reminder_id),
-            $HEADERS
-        );
-        if ($response.status == HTTP_OK) {
-            return true;
-        }
-        else {
-            $this->_report_error($response, $content, 'delete_reminder');
-            return false;
-        }
-    }
-    
-    function list_reminders($num_reminders) {
-        /*
-        returns a list of the last num_reminders created reminders, or
-        None if an error occurred
-        */
-        [$response, $content] = $this->auth_http.request(
-            $URIs['list'],
-            'POST',
-            list_reminder_request_body($num_reminders),
-            $HEADERS
-        );
-        if ($response.status == HTTP_OK) {
-            $content_dict = json_decode($content.decode('utf-8'));
-            if (!array_key_exists('1', $content_dict)) {
-                return [];
-            }
-            $reminders_dict_list = $content_dict['1'];
-            $reminders = [];
-            foreach($reminders_dict_list as $reminder_dict) {
-                array_push($reminders, build_reminder($reminder_dict));
-            }
-            return $reminders;
-        }
-        else {
-            $this->_report_error($response, $content, 'list_reminders');
-            return null;
-        }
+    else {
+        return false;
     }
 }
+
+function get_reminder($httpClient, $reminder_id) {
+    /*
+    retrieve information about the reminder with the given id. 
+    None if an error occurred
+    */
+    [$response, $content] = $httpClient->request(
+        'POST',
+        $URIs['get'],
+        get_reminder_request_body($reminder_id),
+        $HEADERS
+    );
+    if ($response.status == HTTP_OK) {
+        $content_dict = json_decode($content.decode('utf-8'));
+        if (!isset($content_dict) || empty($content_dict)) {
+            print("Couldn\'t find reminder with id=${reminder_id}");
+            return null;
+        }
+        $reminder_dict = $content_dict['1'][0];
+        return build_reminder($reminder_dict);
+    }
+    else {
+        return null;
+    }
+}
+
+function delete_reminder($httpClient, $reminder_id) {
+    /*
+    delete the reminder with the given id.
+    Returns True upon a successful deletion
+    */
+    [$response, $content] = $httpClient->request(
+        'POST',
+        $URIs['delete'],
+        delete_reminder_request_body($reminder_id),
+        $HEADERS
+    );
+    if ($response.status == HTTP_OK) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+function list_reminders($httpClient, $num_reminders) {
+    /*
+    returns a list of the last num_reminders created reminders, or
+    None if an error occurred
+    */
+    [$response, $content] = $httpClient->request(
+        'POST',
+        $URIs['list'],
+        list_reminder_request_body($num_reminders),
+        $HEADERS
+    );
+    if ($response.status == HTTP_OK) {
+        $content_dict = json_decode($content.decode('utf-8'));
+        if (!array_key_exists('1', $content_dict)) {
+            return [];
+        }
+        $reminders_dict_list = $content_dict['1'];
+        $reminders = [];
+        foreach($reminders_dict_list as $reminder_dict) {
+            array_push($reminders, build_reminder($reminder_dict));
+        }
+        return $reminders;
+    }
+    else {
+        return null;
+    }
+}
+

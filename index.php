@@ -64,14 +64,28 @@
 
     $client = new Google_Client();
     $client->setAuthConfig('client_secret.json');
+
     $client->addScope(Google_Service_Drive::DRIVE_METADATA_READONLY);
+    $client->addScope('https://www.googleapis.com/auth/reminders');
 
     if (isset($_SESSION['access_token']) && $_SESSION['access_token']) {
+      // Set your method for authentication. Depending on the API, This could be
+      // directly with an access token, API key.
       $client->setAccessToken($_SESSION['access_token']);
+
+      // returns a Guzzle HTTP Client
+      $httpClient = $client->authorize();
+
+      // TODO:: make an HTTP request
+      //$response = $httpClient->get('https://www.googleapis.com/plus/v1/people/me');
+
+      // http://docs.guzzlephp.org/en/stable/request-options.html
+
       $drive = new Google_Service_Drive($client);
       $files = $drive->files->listFiles(array())->getFiles();
       echo json_encode($files);
-    } else {
+    }
+    else {
       $redirect_uri = 'https://' . $_SERVER['HTTP_HOST'] . '/oauth2callback.php';
       header('Location: ' . filter_var($redirect_uri, FILTER_SANITIZE_URL));
     }

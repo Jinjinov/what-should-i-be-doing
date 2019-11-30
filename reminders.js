@@ -1,47 +1,15 @@
-class Reminder {
-    constructor(id,title,dt,creation_timestamp_msec = null,done = false) {
-        if (id == null) {
-            throw 'Reminder id must not be None';
-        }
-        this.id = id;
-        this.title = title;
-        this.dt = dt;
-        this.creation_timestamp_msec = creation_timestamp_msec;
-        this.done = done;
+function Reminder(id,title,dt,creation_timestamp_msec = null,done = false) {
+    if (id == null) {
+        throw 'Reminder id must not be None';
     }
+    this.id = id;
+    this.title = title;
+    this.dt = dt;
+    this.creation_timestamp_msec = creation_timestamp_msec;
+    this.done = done;
 }
-
-// https://github.com/andreassolberg/jso
 
 // https://developers.google.com/identity/protocols/OAuth2UserAgent
-
-var USER_OAUTH_DATA_FILE = os.path.expanduser('~/.google-reminders-cli-oauth');
-
-function authenticate() {
-    /*
-    returns an Http instance that already contains the user credentials and is
-    ready to make requests to alter user data.
-    */
-
-    var app_keys = {
-        "APP_CLIENT_ID": "380438262846-qktru2bcctgi6cjiqrqdfajcuarqgnqm.apps.googleusercontent.com",
-        "APP_CLIENT_SECRET": "mDFm3Wx-PCWpa0HdOG9r-GnW"
-    };
-
-    var storage = Storage(USER_OAUTH_DATA_FILE);
-    var credentials = storage.get();
-    if (credentials == null || credentials.invalid) {
-        credentials = tools.run_flow(
-            OAuth2WebServerFlow(
-                app_keys['APP_CLIENT_ID'],
-                app_keys['APP_CLIENT_SECRET'],
-                ['https://www.googleapis.com/auth/reminders'],
-                'google reminders cli tool'),
-            storage);
-    }
-    var auth_http = credentials.authorize(httplib2.Http());
-    return auth_http;
-}
 
 function create_reminder_request_body(reminder) {
     var body = {
@@ -147,109 +115,94 @@ var HEADERS = {
 };
 
 var HTTP_OK = 200;
+    
+function create_reminder(httpRequest, access_token, reminder) {
+    /*
+    send a 'create reminder' request.
+    returns True upon a successful creation of a reminder
+    */
+    var [response, content] = httpRequest.open(
+        'POST',
+        URIs['create'] + access_token,
+        create_reminder_request_body(reminder),
+        HEADERS
+    );
+    if (response.status == HTTP_OK) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
 
-class RemindersClient {
-    constructor() {
-        this.auth_http = authenticate();
-    }
-    
-    _report_error(response, content, func_name) {
-        print(`Error in ${func_name}:`);
-        print(`    status code: ${response.status}`);
-        print(`    content: ${content}`);
-    }
-    
-    create_reminder(reminder) {
-        /*
-        send a 'create reminder' request.
-        returns True upon a successful creation of a reminder
-        */
-        var [response, content] = this.auth_http.request(
-            URIs['create'],
-            'POST',
-            create_reminder_request_body(reminder),
-            HEADERS
-        );
-        if (response.status == HTTP_OK) {
-            return true;
-        }
-        else {
-            this._report_error(response, content, 'create_reminder');
-            return false;
-        }
-    }
-
-    get_reminder(reminder_id) {
-        /*
-        retrieve information about the reminder with the given id. 
-        None if an error occurred
-        */
-        var [response, content] = this.auth_http.request(
-            URIs['get'],
-            'POST',
-            get_reminder_request_body(reminder_id),
-            HEADERS
-        );
-        if (response.status == HTTP_OK) {
-            var content_dict = JSON.parse(content.decode('utf-8'));
-            if (content_dict == {}) {
-                print(`Couldn't find reminder with id=${reminder_id}`);
-                return null;
-            }
-            var reminder_dict = content_dict['1'][0];
-            return build_reminder(reminder_dict);
-        }
-        else {
-            this._report_error(response, content, 'get_reminder');
-        }
-    }
-    
-    delete_reminder(reminder_id) {
-        /*
-        delete the reminder with the given id.
-        Returns True upon a successful deletion
-        */
-        var [response, content] = this.auth_http.request(
-            URIs['delete'],
-            'POST',
-            delete_reminder_request_body(reminder_id),
-            HEADERS
-        );
-        if (response.status == HTTP_OK) {
-            return true;
-        }
-        else {
-            this._report_error(response, content, 'delete_reminder');
-            return false;
-        }
-    }
-    
-    list_reminders(num_reminders) {
-        /*
-        returns a list of the last num_reminders created reminders, or
-        None if an error occurred
-        */
-        var [response, content] = this.auth_http.request(
-            URIs['list'],
-            'POST',
-            list_reminder_request_body(num_reminders),
-            HEADERS
-        );
-        if (response.status == HTTP_OK) {
-            var content_dict = JSON.parse(content.decode('utf-8'));
-            if (!('1' in content_dict)) {
-                return [];
-            }
-            var reminders_dict_list = content_dict['1'];
-            var reminders = [];
-            for(var reminder_dict of reminders_dict_list) {
-                reminders.push(build_reminder(reminder_dict));
-            }
-            return reminders;
-        }
-        else {
-            this._report_error(response, content, 'list_reminders');
+function get_reminder(httpRequest, access_token, reminder_id) {
+    /*
+    retrieve information about the reminder with the given id. 
+    None if an error occurred
+    */
+    var [response, content] = httpRequest.open(
+        'POST',
+        URIs['get'] + access_token,
+        get_reminder_request_body(reminder_id),
+        HEADERS
+    );
+    if (response.status == HTTP_OK) {
+        var content_dict = JSON.parse(content.decode('utf-8'));
+        if (content_dict == {}) {
+            print(`Couldn't find reminder with id=${reminder_id}`);
             return null;
         }
+        var reminder_dict = content_dict['1'][0];
+        return build_reminder(reminder_dict);
+    }
+    else {
+        return null;
+    }
+}
+
+function delete_reminder(httpRequest, access_token, reminder_id) {
+    /*
+    delete the reminder with the given id.
+    Returns True upon a successful deletion
+    */
+    var [response, content] = httpRequest.open(
+        'POST',
+        URIs['delete'] + access_token,
+        delete_reminder_request_body(reminder_id),
+        HEADERS
+    );
+    if (response.status == HTTP_OK) {
+        return true;
+    }
+    else {
+        return false;
+    }
+}
+
+function list_reminders(httpRequest, access_token, num_reminders) {
+    /*
+    returns a list of the last num_reminders created reminders, or
+    None if an error occurred
+    */
+    var [response, content] = httpRequest.open(
+        'POST',
+        URIs['list'] + access_token,
+        list_reminder_request_body(num_reminders),
+        HEADERS
+    );
+    if (response.status == HTTP_OK) {
+        var content_dict = JSON.parse(content.decode('utf-8'));
+        if (!('1' in content_dict)) {
+            return [];
+        }
+        var reminders_dict_list = content_dict['1'];
+        var reminders = [];
+        for(var reminder_dict of reminders_dict_list) {
+            reminders.push(build_reminder(reminder_dict));
+        }
+        return reminders;
+    }
+    else {
+        return null;
     }
 }
