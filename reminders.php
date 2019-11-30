@@ -43,16 +43,19 @@ function create_reminder_request_body($reminder) {
             '8' => 0
         ]
     ];
+
     return json_encode($body);
 }
 
 function get_reminder_request_body($reminder_id) {
     $body = (object)['2' => [(object)['2' => $reminder_id]]];
+
     return json_encode($body);
 }
 
 function delete_reminder_request_body($reminder_id) {
     $body = (object)['2' => [(object)['2' => $reminder_id]]];
+
     return json_encode($body);
 }
 
@@ -78,11 +81,13 @@ function list_reminder_request_body($num_reminders, $max_timestamp_msec = 0) {
         (I wish Google had a normal API for reminders)
         */
     }
+
     return json_encode($body);
 }
 
 function build_reminder($reminder_dict) {
     $r = $reminder_dict;
+
     try {
         $id = $r['1']['2'];
         $title = $r['3'];
@@ -105,6 +110,7 @@ function build_reminder($reminder_dict) {
     }
     catch (Exception $KeyError) {
         print('build_reminder failed: unrecognized reminder dictionary format');
+        
         return null;
     }
 }
@@ -136,7 +142,7 @@ function create_reminder($httpClient, $reminder) {
         ]
     );
 
-    if ($response.getStatusCode() == HTTP_OK) {
+    if ($response.getStatusCode() == $HTTP_OK) {
         $content = $response->getBody();
         return true;
     }
@@ -159,10 +165,10 @@ function get_reminder($httpClient, $reminder_id) {
         ]
     );
 
-    if ($response.getStatusCode() == HTTP_OK) {
+    if ($response.getStatusCode() == $HTTP_OK) {
 
         $content = $response->getBody();
-        $content_dict = json_decode($content.decode('utf-8'));
+        $content_dict = json_decode($content);
 
         if (!isset($content_dict) || empty($content_dict)) {
             print("Couldn\'t find reminder with id=${reminder_id}");
@@ -192,7 +198,7 @@ function delete_reminder($httpClient, $reminder_id) {
         ]
     );
 
-    if ($response.getStatusCode() == HTTP_OK) {
+    if ($response.getStatusCode() == $HTTP_OK) {
         $content = $response->getBody();
         return true;
     }
@@ -215,10 +221,10 @@ function list_reminders($httpClient, $num_reminders) {
         ]
     );
 
-    if ($response.getStatusCode() == HTTP_OK) {
+    if ($response.getStatusCode() == $HTTP_OK) {
 
         $content = $response->getBody();
-        $content_dict = json_decode($content.decode('utf-8'));
+        $content_dict = json_decode($content);
 
         if (!array_key_exists('1', $content_dict)) {
             return [];

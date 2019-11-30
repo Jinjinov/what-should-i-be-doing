@@ -37,16 +37,19 @@ function create_reminder_request_body(reminder) {
             '8': 0
         }
     };
+
     return JSON.stringify(body);
 }
 
 function get_reminder_request_body(reminder_id) {
     var body = {'2': [{'2': reminder_id}]};
+
     return JSON.stringify(body);
 }
 
 function delete_reminder_request_body(reminder_id) {
     var body = {'2': [{'2': reminder_id}]};
+
     return JSON.stringify(body);
 }
 
@@ -72,11 +75,13 @@ function list_reminder_request_body(num_reminders, max_timestamp_msec = 0) {
         (I wish Google had a normal API for reminders)
         */
     }
+
     return JSON.stringify(body);
 }
 
 function build_reminder(reminder_dict) {
     var r = reminder_dict;
+
     try {
         var id = r['1']['2'];
         var title = r['3'];
@@ -112,7 +117,7 @@ var URIs = {
 
 var HTTP_OK = 200;
     
-function create_reminder(oauth2SignIn, access_token, reminder) {
+function create_reminder(callback, access_token, reminder) {
     /*
     send a 'create reminder' request.
     returns True upon a successful creation of a reminder
@@ -124,22 +129,23 @@ function create_reminder(oauth2SignIn, access_token, reminder) {
 
     xhr.open('POST', URIs['create'] + access_token);
 
+    //xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
     xhr.setRequestHeader('Content-type', 'application/json');
         
     xhr.onreadystatechange = function (e) {
         if (xhr.status == HTTP_OK) {
-            return true;
+            callback(true);
         }
         else {
-            oauth2SignIn();
-            return false;
+            callback(false);
         }
     }
 
     xhr.send(create_reminder_request_body(reminder));
 }
 
-function get_reminder(oauth2SignIn, access_token, reminder_id) {
+function get_reminder(callback, access_token, reminder_id) {
     /*
     retrieve information about the reminder with the given id. 
     None if an error occurred
@@ -151,28 +157,32 @@ function get_reminder(oauth2SignIn, access_token, reminder_id) {
 
     xhr.open('POST', URIs['get'] + access_token);
 
+    //xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
     xhr.setRequestHeader('Content-type', 'application/json');
 
     xhr.onreadystatechange = function (e) {
         if (xhr.status == HTTP_OK) {
-            var content_dict = JSON.parse(xhr.response.decode('utf-8'));
+            var content_dict = JSON.parse(xhr.response);
+
             if (content_dict == {}) {
                 print(`Couldn't find reminder with id=${reminder_id}`);
-                return null;
+                callback(null);
             }
-            var reminder_dict = content_dict['1'][0];
-            return build_reminder(reminder_dict);
+            else {
+                var reminder_dict = content_dict['1'][0];
+                callback(build_reminder(reminder_dict));
+            }
         }
         else {
-            oauth2SignIn();
-            return null;
+            callback(null);
         }
     }
 
     xhr.send(get_reminder_request_body(reminder_id));
 }
 
-function delete_reminder(oauth2SignIn, access_token, reminder_id) {
+function delete_reminder(callback, access_token, reminder_id) {
     /*
     delete the reminder with the given id.
     Returns True upon a successful deletion
@@ -184,22 +194,23 @@ function delete_reminder(oauth2SignIn, access_token, reminder_id) {
 
     xhr.open('POST', URIs['delete'] + access_token);
 
+    //xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
     xhr.setRequestHeader('Content-type', 'application/json');
 
     xhr.onreadystatechange = function (e) {
         if (xhr.status == HTTP_OK) {
-            return true;
+            callback(true);
         }
         else {
-            oauth2SignIn();
-            return false;
+            callback(false);
         }
     }
 
     xhr.send(delete_reminder_request_body(reminder_id));
 }
 
-function list_reminders(oauth2SignIn, access_token, num_reminders) {
+function list_reminders(callback, access_token, num_reminders) {
     /*
     returns a list of the last num_reminders created reminders, or
     None if an error occurred
@@ -211,24 +222,30 @@ function list_reminders(oauth2SignIn, access_token, num_reminders) {
 
     xhr.open('POST', URIs['list'] + access_token);
 
+    //xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+
     xhr.setRequestHeader('Content-type', 'application/json');
 
     xhr.onreadystatechange = function (e) {
         if (xhr.status == HTTP_OK) {
-            var content_dict = JSON.parse(xhr.response.decode('utf-8'));
+            var content_dict = JSON.parse(xhr.response);
+
             if (!('1' in content_dict)) {
-                return [];
+                callback([]);
             }
-            var reminders_dict_list = content_dict['1'];
-            var reminders = [];
-            for(var reminder_dict of reminders_dict_list) {
-                reminders.push(build_reminder(reminder_dict));
+            else {
+                var reminders_dict_list = content_dict['1'];
+                var reminders = [];
+
+                for(var reminder_dict of reminders_dict_list) {
+                    reminders.push(build_reminder(reminder_dict));
+                }
+
+                callback(reminders);
             }
-            return reminders;
         }
         else {
-            oauth2SignIn();
-            return null;
+            callback(null);
         }
     }
 
