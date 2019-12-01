@@ -116,6 +116,15 @@ var URIs = {
 };
 
 var HTTP_OK = 200;
+
+function encodeObject(params) {
+    var query = [];
+    for (let key in params) {
+      let val = encodeURIComponent(key) + "=" + encodeURIComponent(params[key]);
+      query.push(val);
+    }
+    return query.join('&');
+  }
     
 function create_reminder(reminder, access_token, callback) {
     /*
@@ -125,9 +134,11 @@ function create_reminder(reminder, access_token, callback) {
 
     var xhr = new XMLHttpRequest();
 
-    xhr.open('POST', URIs['create']);
+    //xhr.open('POST', URIs['create'] + '?access_token=' + access_token);
+    //xhr.setRequestHeader('Content-type', 'application/json');
 
-    xhr.setRequestHeader('Content-type', 'application/json');
+    xhr.open('POST', URIs['create']);
+    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
         
     xhr.onreadystatechange = function (e) {
         if (xhr.readyState === 4 && xhr.status === 200) {
@@ -139,10 +150,11 @@ function create_reminder(reminder, access_token, callback) {
     }
 
     var body = create_reminder_request_body(reminder);
-
     body['access_token'] = access_token;
 
-    xhr.send(JSON.stringify(body));
+    //body = JSON.stringify(body);
+    body = encodeObject(body);
+    xhr.send(body);
 }
 
 function get_reminder(reminder_id, access_token, callback) {
@@ -153,9 +165,11 @@ function get_reminder(reminder_id, access_token, callback) {
 
     var xhr = new XMLHttpRequest();
 
+    //xhr.open('POST', URIs['get'] + '?access_token=' + access_token);
+    //xhr.setRequestHeader('Content-type', 'application/json');
+    
     xhr.open('POST', URIs['get']);
-
-    xhr.setRequestHeader('Content-type', 'application/json');
+    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 
     xhr.onreadystatechange = function (e) {
         if (xhr.readyState === 4 && xhr.status === 200) {
@@ -175,10 +189,11 @@ function get_reminder(reminder_id, access_token, callback) {
     }
 
     var body = get_reminder_request_body(reminder_id);
-
     body['access_token'] = access_token;
 
-    xhr.send(JSON.stringify(body));
+    //body = JSON.stringify(body);
+    body = encodeObject(body);
+    xhr.send(body);
 }
 
 function delete_reminder(reminder_id, access_token, callback) {
@@ -189,9 +204,11 @@ function delete_reminder(reminder_id, access_token, callback) {
 
     var xhr = new XMLHttpRequest();
 
+    //xhr.open('POST', URIs['delete'] + '?access_token=' + access_token);
+    //xhr.setRequestHeader('Content-type', 'application/json');
+    
     xhr.open('POST', URIs['delete']);
-
-    xhr.setRequestHeader('Content-type', 'application/json');
+    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 
     xhr.onreadystatechange = function (e) {
         if (xhr.readyState === 4 && xhr.status === 200) {
@@ -203,10 +220,11 @@ function delete_reminder(reminder_id, access_token, callback) {
     }
 
     var body = delete_reminder_request_body(reminder_id);
-
     body['access_token'] = access_token;
 
-    xhr.send(JSON.stringify(body));
+    //body = JSON.stringify(body);
+    body = encodeObject(body);
+    xhr.send(body);
 }
 
 function list_reminders(num_reminders, access_token, callback) {
@@ -217,9 +235,11 @@ function list_reminders(num_reminders, access_token, callback) {
 
     var xhr = new XMLHttpRequest();
 
+    //xhr.open('POST', URIs['list'] + '?access_token=' + access_token);
+    //xhr.setRequestHeader('Content-type', 'application/json');
+    
     xhr.open('POST', URIs['list']);
-
-    xhr.setRequestHeader('Content-type', 'application/json');
+    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 
     xhr.onreadystatechange = function (e) {
         if (xhr.readyState === 4 && xhr.status === 200) {
@@ -245,8 +265,9 @@ function list_reminders(num_reminders, access_token, callback) {
     }
 
     var body = list_reminder_request_body(num_reminders);
-
     body['access_token'] = access_token;
 
-    xhr.send(JSON.stringify(body));
+    //body = JSON.stringify(body);
+    body = encodeObject(body);
+    xhr.send(body);
 }
