@@ -109,7 +109,7 @@ function build_reminder($reminder_dict) {
         );
     }
     catch (Exception $KeyError) {
-        print('build_reminder failed: unrecognized reminder dictionary format');
+        echo('build_reminder failed: unrecognized reminder dictionary format');
         
         return null;
     }
@@ -171,7 +171,7 @@ function get_reminder($httpClient, $reminder_id) {
         $content_dict = json_decode($content);
 
         if (!isset($content_dict) || empty($content_dict)) {
-            print("Couldn\'t find reminder with id=${reminder_id}");
+            echo("Couldn\'t find reminder with id=${reminder_id}");
             return null;
         }
 

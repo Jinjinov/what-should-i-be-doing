@@ -7,7 +7,6 @@ $client = new Google_Client();
 $client->setAuthConfigFile('client_secret.json');
 $client->setRedirectUri('https://' . $_SERVER['HTTP_HOST'] . '/oauth2callback.php');
 
-$client->addScope(Google_Service_Drive::DRIVE_METADATA_READONLY);
 $client->addScope('https://www.googleapis.com/auth/reminders');
 
 if (! isset($_GET['code'])) {

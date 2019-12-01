@@ -60,6 +60,8 @@
       <button onclick="sendRequest();">sendRequest</button>
     </div>
 
+    <script src="reminders.js"></script>
+
     <script type="text/javascript">
 
       var YOUR_CLIENT_ID = '592595683573-67d1cms7i452752f1n7ik0altkohdcod.apps.googleusercontent.com';
@@ -86,25 +88,16 @@
 
         if (params && params['access_token']) {
 
-          // https://stackoverflow.com/questions/9713058/send-post-data-using-xmlhttprequest
-
-          var xhr = new XMLHttpRequest();
-
-          xhr.open('GET', 'https://www.googleapis.com/drive/v3/about?fields=user&' + 'access_token=' + params['access_token']);
-
-          //xhr.setRequestHeader('Content-type', 'application/json');
-
-          xhr.onreadystatechange = function (e) {
-            if (xhr.readyState === 4 && xhr.status === 200) {
-              console.log(xhr.response);
+          list_reminders(10, params['access_token'], function (reminders) {
+            if (reminders != null) {
+              console.log(reminders);
             }
-            else if (xhr.readyState === 4 && xhr.status === 401) {
+            else if (reminders == null) {
               // Token invalid, so prompt for user permission.
               oauth2SignIn();
             }
-          };
+          });
 
-          xhr.send(null); // xhr.send(JSON.stringify(params))
         }
         else {
           oauth2SignIn();
