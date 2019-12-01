@@ -124,7 +124,7 @@ function encodeObject(params) {
       query.push(val);
     }
     return query.join('&');
-  }
+}
     
 function create_reminder(reminder, access_token, callback) {
     /*
@@ -132,12 +132,17 @@ function create_reminder(reminder, access_token, callback) {
     returns True upon a successful creation of a reminder
     */
 
+    var body = create_reminder_request_body(reminder);
+    body['access_token'] = access_token;
+    //body = JSON.stringify(body);
+    body = encodeObject(body);
+
     var xhr = new XMLHttpRequest();
 
-    //xhr.open('POST', URIs['create'] + '?access_token=' + access_token);
+    xhr.open('POST', URIs['create'] + '?' + body);
     //xhr.setRequestHeader('Content-type', 'application/json');
 
-    xhr.open('POST', URIs['create']);
+    //xhr.open('POST', URIs['create']);
     xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
         
     xhr.onreadystatechange = function (e) {
@@ -149,12 +154,8 @@ function create_reminder(reminder, access_token, callback) {
         }
     }
 
-    var body = create_reminder_request_body(reminder);
-    body['access_token'] = access_token;
-
-    //body = JSON.stringify(body);
-    body = encodeObject(body);
-    xhr.send(body);
+    //xhr.send(body);
+    xhr.send(null);
 }
 
 function get_reminder(reminder_id, access_token, callback) {
@@ -163,12 +164,17 @@ function get_reminder(reminder_id, access_token, callback) {
     None if an error occurred
     */
 
+    var body = get_reminder_request_body(reminder_id);
+    body['access_token'] = access_token;
+    //body = JSON.stringify(body);
+    body = encodeObject(body);
+
     var xhr = new XMLHttpRequest();
 
-    //xhr.open('POST', URIs['get'] + '?access_token=' + access_token);
+    xhr.open('POST', URIs['get'] + '?' + body);
     //xhr.setRequestHeader('Content-type', 'application/json');
     
-    xhr.open('POST', URIs['get']);
+    //xhr.open('POST', URIs['get']);
     xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 
     xhr.onreadystatechange = function (e) {
@@ -188,12 +194,8 @@ function get_reminder(reminder_id, access_token, callback) {
         }
     }
 
-    var body = get_reminder_request_body(reminder_id);
-    body['access_token'] = access_token;
-
-    //body = JSON.stringify(body);
-    body = encodeObject(body);
-    xhr.send(body);
+    //xhr.send(body);
+    xhr.send(null);
 }
 
 function delete_reminder(reminder_id, access_token, callback) {
@@ -202,12 +204,17 @@ function delete_reminder(reminder_id, access_token, callback) {
     Returns True upon a successful deletion
     */
 
+    var body = delete_reminder_request_body(reminder_id);
+    body['access_token'] = access_token;
+    //body = JSON.stringify(body);
+    body = encodeObject(body);
+
     var xhr = new XMLHttpRequest();
 
-    //xhr.open('POST', URIs['delete'] + '?access_token=' + access_token);
+    xhr.open('POST', URIs['delete'] + '?' + body);
     //xhr.setRequestHeader('Content-type', 'application/json');
     
-    xhr.open('POST', URIs['delete']);
+    //xhr.open('POST', URIs['delete']);
     xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 
     xhr.onreadystatechange = function (e) {
@@ -219,12 +226,8 @@ function delete_reminder(reminder_id, access_token, callback) {
         }
     }
 
-    var body = delete_reminder_request_body(reminder_id);
-    body['access_token'] = access_token;
-
-    //body = JSON.stringify(body);
-    body = encodeObject(body);
-    xhr.send(body);
+    //xhr.send(body);
+    xhr.send(null);
 }
 
 function list_reminders(num_reminders, access_token, callback) {
@@ -233,12 +236,17 @@ function list_reminders(num_reminders, access_token, callback) {
     None if an error occurred
     */
 
+    var body = list_reminder_request_body(num_reminders);
+    body['access_token'] = access_token;
+    //body = JSON.stringify(body);
+    body = encodeObject(body);
+
     var xhr = new XMLHttpRequest();
 
-    //xhr.open('POST', URIs['list'] + '?access_token=' + access_token);
+    xhr.open('POST', URIs['list'] + '?' + body);
     //xhr.setRequestHeader('Content-type', 'application/json');
     
-    xhr.open('POST', URIs['list']);
+    //xhr.open('POST', URIs['list']);
     xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 
     xhr.onreadystatechange = function (e) {
@@ -264,10 +272,6 @@ function list_reminders(num_reminders, access_token, callback) {
         }
     }
 
-    var body = list_reminder_request_body(num_reminders);
-    body['access_token'] = access_token;
-
-    //body = JSON.stringify(body);
-    body = encodeObject(body);
-    xhr.send(body);
+    //xhr.send(body);
+    xhr.send(null);
 }
