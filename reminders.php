@@ -23,21 +23,21 @@ function create_reminder_request_body($reminder) {
             '1' => 7
         ],
         '3' => (object)[
-            '2' => $reminder.id
+            '2' => $reminder->id
         ],
         '4' => (object)[
             '1' => (object)[
-                '2' => $reminder.id
+                '2' => $reminder->id
             ],
-            '3' => $reminder.title,
+            '3' => $reminder->title,
             '5' => (object)[
-                '1' => $reminder.dt.year,
-                '2' => $reminder.dt.month,
-                '3' => $reminder.dt.day,
+                '1' => $reminder->dt->year,
+                '2' => $reminder->dt->month,
+                '3' => $reminder->dt->day,
                 '4' => (object)[
-                    '1' => $reminder.dt.hour,
-                    '2' => $reminder.dt.minute,
-                    '3' => $reminder.dt.second,
+                    '1' => $reminder->dt->hour,
+                    '2' => $reminder->dt->minute,
+                    '3' => $reminder->dt->second,
                 ]
             ],
             '8' => 0
@@ -123,7 +123,7 @@ $URIs = [
 ];
 
 $HEADERS = [
-    'content-type' => 'application/json+protobuf',
+    'content-type' => 'application/json',
 ];
 
 $HTTP_OK = 200;
@@ -142,7 +142,7 @@ function create_reminder($httpClient, $reminder) {
         ]
     );
 
-    if ($response.getStatusCode() == $HTTP_OK) {
+    if ($response->getStatusCode() == $HTTP_OK) {
         $content = $response->getBody();
         return true;
     }
@@ -165,7 +165,7 @@ function get_reminder($httpClient, $reminder_id) {
         ]
     );
 
-    if ($response.getStatusCode() == $HTTP_OK) {
+    if ($response->getStatusCode() == $HTTP_OK) {
 
         $content = $response->getBody();
         $content_dict = json_decode($content);
@@ -198,7 +198,7 @@ function delete_reminder($httpClient, $reminder_id) {
         ]
     );
 
-    if ($response.getStatusCode() == $HTTP_OK) {
+    if ($response->getStatusCode() == $HTTP_OK) {
         $content = $response->getBody();
         return true;
     }
@@ -221,7 +221,7 @@ function list_reminders($httpClient, $num_reminders) {
         ]
     );
 
-    if ($response.getStatusCode() == $HTTP_OK) {
+    if ($response->getStatusCode() == $HTTP_OK) {
 
         $content = $response->getBody();
         $content_dict = json_decode($content);
