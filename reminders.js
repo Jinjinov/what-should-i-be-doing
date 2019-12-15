@@ -1,12 +1,34 @@
-function Reminder(id,title,dt,creation_timestamp_msec = null,done = false) {
-    if (id == null) {
-        throw 'Reminder id must not be None';
+function formatDate(date) {
+    var day = date.getDate();
+    day = day < 10 ? ' ' + day : day;
+    var month = date.getMonth() + 1;
+    month = month < 10 ? '0' + month : month;
+    var hours = date.getHours();
+    hours = hours < 10 ? ' ' + hours : hours;
+    var minutes = date.getMinutes();
+    minutes = minutes < 10 ? '0' + minutes : minutes;
+    return day + "." + month + "." + date.getFullYear() + " " + hours + ':' + minutes;
+}
+
+class Reminder {
+    constructor(id,title,dt,creation_timestamp_msec = null,done = false) {
+        if (id == null) {
+            throw 'Reminder id must not be None';
+        }
+        this.id = id;
+        this.title = title;
+        this.dt = dt;
+        this.creation_timestamp_msec = creation_timestamp_msec;
+        this.done = done;
     }
-    this.id = id;
-    this.title = title;
-    this.dt = dt;
-    this.creation_timestamp_msec = creation_timestamp_msec;
-    this.done = done;
+    toString() {
+        if(this.done) {
+            return `${formatDate(this.dt)} ${this.title} [Done]`;
+        }
+        else {
+            return `${formatDate(this.dt)} ${this.title}`;
+        }
+    }
 }
 
 // https://developers.google.com/identity/protocols/OAuth2UserAgent
@@ -85,19 +107,28 @@ function build_reminder(reminder_dict) {
     try {
         var id = r['1']['2'];
         var title = r['3'];
+
         var year = r['5']['1'];
         var month = r['5']['2'];
         var day = r['5']['3'];
-        var hour = r['5']['4']['1'];
-        var minute = r['5']['4']['2'];
-        var second = r['5']['4']['3'];
+
+        var date_time = new Date(year, month-1, day);
+
+        if('4' in r['5']) {
+            var hour = r['5']['4']['1'];
+            var minute = r['5']['4']['2'];
+            var second = r['5']['4']['3'];
+
+            date_time.setHours(hour, minute, second);
+        }
+
         var creation_timestamp_msec = Number(r['18']);
         var done = '8' in r && r['8'] == 1;
         
         return new Reminder(
             id,
             title,
-            Date(year, month, day, hour, minute, second),
+            date_time,
             creation_timestamp_msec,
             done
         );
@@ -114,8 +145,6 @@ var URIs = {
     'get': 'https://reminders-pa.clients6.google.com/v1internalOP/reminders/get',
     'list': 'https://reminders-pa.clients6.google.com/v1internalOP/reminders/list'
 };
-
-var HTTP_OK = 200;
 
 function encodeObject(params) {
     var query = [];
@@ -237,17 +266,19 @@ function list_reminders(num_reminders, access_token, callback) {
     */
 
     var body = list_reminder_request_body(num_reminders);
-    body['access_token'] = access_token;
-    //body = JSON.stringify(body);
-    body = encodeObject(body);
+
+    //body['access_token'] = access_token;
+
+    body = JSON.stringify(body);
+    //body = encodeObject(body);
 
     var xhr = new XMLHttpRequest();
 
-    xhr.open('POST', URIs['list'] + '?' + body);
-    //xhr.setRequestHeader('Content-type', 'application/json');
+    xhr.open('POST', URIs['list'] + '?' + 'access_token=' + access_token);
+    xhr.setRequestHeader('Content-type', 'application/json+protobuf');
     
     //xhr.open('POST', URIs['list']);
-    xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
+    //xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
 
     xhr.onreadystatechange = function (e) {
         if (xhr.readyState === 4 && xhr.status === 200) {
@@ -272,6 +303,6 @@ function list_reminders(num_reminders, access_token, callback) {
         }
     }
 
-    //xhr.send(body);
-    xhr.send(null);
+    xhr.send(body);
+    //xhr.send(null);
 }
