@@ -114,19 +114,6 @@ function build_reminder($reminder_dict) {
         return null;
     }
 }
-
-$URIs = [
-    'create' => 'https://reminders-pa.clients6.google.com/v1internalOP/reminders/create',
-    'delete' => 'https://reminders-pa.clients6.google.com/v1internalOP/reminders/delete',
-    'get' => 'https://reminders-pa.clients6.google.com/v1internalOP/reminders/get',
-    'list' => 'https://reminders-pa.clients6.google.com/v1internalOP/reminders/list'
-];
-
-$HEADERS = [
-    'content-type' => 'application/json',
-];
-
-$HTTP_OK = 200;
     
 function create_reminder($httpClient, $reminder) {
     /*
@@ -135,14 +122,14 @@ function create_reminder($httpClient, $reminder) {
     */
     $response = $httpClient->request(
         'POST',
-        $URIs['create'],
+        'https://reminders-pa.clients6.google.com/v1internalOP/reminders/create',
         [
-            'headers' => $HEADERS,
+            'headers' => [ 'content-type' => 'application/json' ],
             'body' => create_reminder_request_body($reminder),
         ]
     );
 
-    if ($response->getStatusCode() == $HTTP_OK) {
+    if ($response->getStatusCode() == 200) {
         $content = $response->getBody();
         return true;
     }
@@ -158,14 +145,14 @@ function get_reminder($httpClient, $reminder_id) {
     */
     $response = $httpClient->request(
         'POST',
-        $URIs['get'],
+        'https://reminders-pa.clients6.google.com/v1internalOP/reminders/get',
         [
-            'headers' => $HEADERS,
+            'headers' => [ 'content-type' => 'application/json' ],
             'body' => get_reminder_request_body($reminder_id)
         ]
     );
 
-    if ($response->getStatusCode() == $HTTP_OK) {
+    if ($response->getStatusCode() == 200) {
 
         $content = $response->getBody();
         $content_dict = json_decode($content);
@@ -191,14 +178,14 @@ function delete_reminder($httpClient, $reminder_id) {
     */
     $response = $httpClient->request(
         'POST',
-        $URIs['delete'],
+        'https://reminders-pa.clients6.google.com/v1internalOP/reminders/delete',
         [
-            'headers' => $HEADERS,
+            'headers' => [ 'content-type' => 'application/json' ],
             'body' => delete_reminder_request_body($reminder_id)
         ]
     );
 
-    if ($response->getStatusCode() == $HTTP_OK) {
+    if ($response->getStatusCode() == 200) {
         $content = $response->getBody();
         return true;
     }
@@ -214,14 +201,14 @@ function list_reminders($httpClient, $num_reminders) {
     */
     $response = $httpClient->request(
         'POST',
-        $URIs['list'],
+        'https://reminders-pa.clients6.google.com/v1internalOP/reminders/list',
         [
-            'headers' => $HEADERS,
+            'headers' => [ 'content-type' => 'application/json' ],
             'body' => list_reminder_request_body($num_reminders)
         ]
     );
 
-    if ($response->getStatusCode() == $HTTP_OK) {
+    if ($response->getStatusCode() == 200) {
 
         $content = $response->getBody();
         $content_dict = json_decode($content);
