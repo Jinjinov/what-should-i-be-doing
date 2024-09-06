@@ -20,3 +20,4 @@ How to run:
   }
 }
 ```
+![What should I be doing right now](https://github.com/user-attachments/assets/dcbc4d4b-c913-4315-b874-49b2c63c29bd)
